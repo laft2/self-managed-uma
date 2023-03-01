@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -139,5 +140,11 @@ func main() {
 			return c.Redirect(http.StatusSeeOther, "/authenticate")
 		}
 	})
-	e.Logger.Fatal(e.Start("localhost:10001"))
+	port := os.Getenv("RS_PORT")
+	if port == "" {
+		e.Logger.Fatal(e.Start("localhost:10001"))
+	} else {
+		// for docker environment
+		e.Logger.Fatal(e.Start(":" + port))
+	}
 }

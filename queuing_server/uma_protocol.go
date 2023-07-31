@@ -69,7 +69,7 @@ func AddUmaGroup(e *echo.Echo) {
 		}
 
 		authzReq := AuthorizationRequest{}
-		authzReq.RSDomain := ticketInfo.ID
+		authzReq.RSDomain = ticketInfo.ID
 
 		// accessTokenInfo, err := CreateRpt(ticketInfo.PermRequest.ResourceID, ticketInfo.PermRequest.ResourceScopes)
 		// if err != nil {

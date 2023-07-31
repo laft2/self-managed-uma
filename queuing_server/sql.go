@@ -4,15 +4,18 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sqlx.DB
 
 type AuthorizationRequest struct {
+	Id           int        `db:"id" json:"id"`
 	ClientDomain string     `db:"client_domain" json:"client_domain"`
 	RSDomain     string     `db:"rs_domain" json:"rs_domain"` // resource server domain
 	Scopes       string     `db:"scopes" json:"scopes"`       // scopes separeted by space
-	Timestamp    *time.Time `json:"timestamp"`
+	Status       string     `db:"status" json:"status"`
+	AddedAt      *time.Time `db:"added_at" json:"added_at"`
 }
 
 func ConnectDB() (*sqlx.DB, error) {
@@ -25,13 +28,13 @@ func GetWaitingRequests() ([]AuthorizationRequest, error) {
 		return nil, err
 	}
 
-	waitingRequests := []AuthorizationRequest{}
-	query := `SELECT * FROM waiting_requests WHERE state = "waiting"`
-	err = db.Get(waitingRequests, query)
+	waitingRequests := &[]AuthorizationRequest{}
+	query := `SELECT * FROM authorization_requests WHERE status = "waiting"`
+	err = db.Select(waitingRequests, query)
 	if err != nil {
 		return nil, err
 	}
-	return waitingRequests, nil
+	return *waitingRequests, nil
 }
 
 func SaveRequests(req []*AuthorizationRequest) error {

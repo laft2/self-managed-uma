@@ -115,7 +115,7 @@ func authenticate(c echo.Context, userId string, password string) (res bool, err
 	return
 }
 
-func main() {
+func RS() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Static("/static/css/", "front/css/")

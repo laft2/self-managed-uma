@@ -52,16 +52,16 @@ var RequestSubmitted AuthzError = AuthzError{
 }
 
 // communicate with smartphone (authorization server)
-func AddAuthzGroup(e *echo.Echo) {
-	authzGroup := e.Group("/authz")
-	authzGroup.GET("/requests", func(c echo.Context) error {
+func AddQueueGroup(e *echo.Echo) {
+	queueGroup := e.Group("/queue")
+	queueGroup.GET("/requests", func(c echo.Context) error {
 		requests, err := GetWaitingRequests()
 		if err != nil {
 			return err
 		}
 		return c.JSON(http.StatusOK, requests)
 	})
-	authzGroup.POST("/rpt", func(c echo.Context) error {
+	queueGroup.POST("/rpt", func(c echo.Context) error {
 		return nil
 	})
 }

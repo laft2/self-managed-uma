@@ -11,9 +11,21 @@ import (
 
 func AddPatHandler(e *echo.Echo, conf *oauth2.Config) {
 	g := e.Group("/pat")
+	patDB := map[string]*oauth2.Token{}
 	g.GET("/callback", func(c echo.Context) error {
 		pat, err := conf.Exchange(context.TODO(), c.QueryParam("code"))
-
+		if err != nil {
+			return err
+		}
+		sess, err := store.Get(c.Request(), "suma_rs")
+		if err != nil {
+			return err
+		}
+		id, ok := sess.Values["id"].(string)
+		if !ok {
+			return fmt.Errorf("fail to cast `id` to string")
+		}
+		patDB[id] = pat
 		return nil
 	})
 }

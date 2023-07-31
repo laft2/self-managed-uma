@@ -25,6 +25,7 @@ func main() {
 		return nil
 	})
 	queuing_server.AddUmaGroup(e)
+	queuing_server.AddQueueGroup(e)
 
 	// Start server
 	e.Logger.Fatal(e.Start("localhost:9010"))

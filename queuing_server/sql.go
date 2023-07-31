@@ -10,12 +10,16 @@ import (
 var DB *sqlx.DB
 
 type AuthorizationRequest struct {
-	Id           int        `db:"id" json:"id"`
-	ClientDomain string     `db:"client_domain" json:"client_domain"`
-	RSDomain     string     `db:"rs_domain" json:"rs_domain"` // resource server domain
-	Scopes       string     `db:"scopes" json:"scopes"`       // scopes separeted by space
-	Status       string     `db:"status" json:"status"`
-	AddedAt      *time.Time `db:"added_at" json:"added_at"`
+	Id               int        `db:"id" json:"id"`
+	GrantType        string     `db:"grant_type" json:"grant_type"`
+	Ticket           string     `db:"ticket" json:"ticket"`
+	ClaimToken       *string    `db:"claim_token" json:"claim_token"`
+	ClaimTokenFormat *string    `db:"claim_token_format" json:"claim_token_format"`
+	Pct              *string    `db:"pct" json:"pct"`
+	Rpt              *string    `db:"rpt" json:"rpt"`
+	Scopes           *string     `db:"scopes" json:"scopes"` // scopes separeted by space
+	Status           string     `db:"status" json:"status"`
+	CreatedAt        time.Time `db:"created_at" json:"created_at"`
 }
 
 func ConnectDB() (*sqlx.DB, error) {

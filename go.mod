@@ -3,7 +3,6 @@ module github.com/laft2/self-managed-uma
 go 1.19
 
 require (
-	github.com/go-oauth2/oauth2/v4 v4.5.2
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.1
@@ -19,14 +18,6 @@ require (
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
-	github.com/tidwall/btree v1.6.0 // indirect
-	github.com/tidwall/buntdb v1.3.0 // indirect
-	github.com/tidwall/gjson v1.14.4 // indirect
-	github.com/tidwall/grect v0.1.4 // indirect
-	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.1 // indirect
-	github.com/tidwall/rtred v0.1.2 // indirect
-	github.com/tidwall/tinyqueue v0.1.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/crypto v0.6.0 // indirect

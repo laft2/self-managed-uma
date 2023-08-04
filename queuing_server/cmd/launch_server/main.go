@@ -24,8 +24,8 @@ func main() {
 	e.GET("/user", func(c echo.Context) error {
 		return nil
 	})
-	queuing_server.AddUmaGroup(e)
 	queuing_server.AddQueueGroup(e)
+	queuing_server.AddTicketGroup(e)
 
 	// Start server
 	e.Logger.Fatal(e.Start("localhost:9010"))

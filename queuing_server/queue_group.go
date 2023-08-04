@@ -28,7 +28,7 @@ type AuthzError struct {
 
 var InvalidRequest AuthzError = AuthzError{
 	StatusCode: http.StatusUnauthorized,
-	Error: "invalid_request",
+	Error:      "invalid_request",
 }
 var InvalidGrant AuthzError = AuthzError{
 	StatusCode: http.StatusBadRequest,
@@ -51,12 +51,12 @@ var RequestSubmitted AuthzError = AuthzError{
 	Error:      "request_submitted",
 }
 
-
-// communicate with smartphone (authorization server)
 func AddQueueGroup(e *echo.Echo) {
 	queueGroup := e.Group("/queue")
 	queueGroup.GET("/requests/:user_id", func(c echo.Context) error {
+		// communicate with smartphone (authorization server)
 		// TODO: authenticate user
+		// curl example: curl -XGET 'http://localhost:9010/queue/requests/1'
 		user_id, err := strconv.Atoi(c.Param("user_id"))
 		if err != nil {
 			return err
@@ -68,9 +68,9 @@ func AddQueueGroup(e *echo.Echo) {
 		return c.JSON(http.StatusOK, requests)
 	})
 	queueGroup.POST("/requests", func(c echo.Context) error {
-		req := &qs_db.AuthorizationRequest{}
-		c.Bind(req)
-		err := qs_db.InsertRequest(req)
+		ticket := c.FormValue("ticket")
+		clientReq := c.FormValue("request")
+		err := qs_db.AddClientRequest(ticket, clientReq)
 		if err != nil {
 			return c.JSON(InvalidRequest.StatusCode, InvalidRequest)
 		}

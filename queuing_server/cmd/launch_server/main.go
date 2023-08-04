@@ -26,6 +26,7 @@ func main() {
 	})
 	queuing_server.AddQueueGroup(e)
 	queuing_server.AddTicketGroup(e)
+	queuing_server.AddClientGroup(e)
 
 	// Start server
 	e.Logger.Fatal(e.Start("localhost:9010"))

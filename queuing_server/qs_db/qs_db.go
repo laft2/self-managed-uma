@@ -10,11 +10,12 @@ import (
 var DB *sqlx.DB
 
 type AuthorizationRequest struct {
-	Ticket           string    `db:"ticket" json:"ticket"`
-	EncryptedRequest string    `db:"encrypted_request" json:"authorization_request"`
-	UserId           int       `db:"user_id"`
-	Status           string    `db:"status"`
-	CreatedAt        time.Time `db:"created_at" json:"created_at"`
+	Ticket          string    `db:"ticket" json:"ticket"`
+	RequestedScopes string    `db:"requested_scopes" json:"requested_scopes"`
+	ClientRequest   string    `db:"client_request" json:"request"`
+	UserId          int       `db:"user_id"`
+	Status          string    `db:"status"`
+	CreatedAt       time.Time `db:"created_at" json:"created_at"`
 }
 
 type QsId struct {
@@ -29,7 +30,7 @@ type Ticket struct {
 }
 
 func ConnectDB() (*sqlx.DB, error) {
-	return sqlx.Open("sqlite3", "sql/sample.sqlite3")
+	return sqlx.Open("sqlite3", "qs_db/sample.sqlite3")
 }
 
 func init() {
@@ -42,7 +43,7 @@ func init() {
 
 func SelectWaitingRequests(user_id int) ([]AuthorizationRequest, error) {
 	waitingRequests := &[]AuthorizationRequest{}
-	query := `SELECT encrypted_request,created_at FROM authorization_requests WHERE status = "waiting" and user_id = ?`
+	query := `SELECT requested_scopes,created_at FROM authorization_requests WHERE status = "waiting" and user_id = ?`
 	err := DB.Select(waitingRequests, query, user_id)
 	if err != nil {
 		return nil, err
@@ -56,8 +57,19 @@ func InsertRequest(req *AuthorizationRequest) error {
 		return err
 	}
 	req.UserId = userId
-	req.Status = "waiting"
-	_, err = DB.NamedExec(`INSERT INTO authorization_requests (ticket, encrypted_request, user_id, status, created_at) VALUES (:ticket, :encrypted_request, :user_id, :status)`, req)
+	req.Status = "pending"
+	_, err = DB.NamedExec(`INSERT INTO authorization_requests (ticket, requested_scopes, user_id, status) VALUES (:ticket, :requested_scopes, :user_id, :status)`, req)
+	return err
+}
+
+func AddClientRequest(ticketId, clientRequest string) error {
+	var reqId int
+	newStatus := "waiting"
+	err := DB.Get(&reqId, `SELECT request_id FROM authorization_requests WHERE ticket = ?`, ticketId)
+	if err != nil {
+		return err
+	}
+	_, err = DB.Exec(`UPDATE authorization_requests SET status = ?, client_request = ? WHERE request_id = ?`, newStatus, clientRequest, reqId)
 	return err
 }
 

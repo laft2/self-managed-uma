@@ -12,7 +12,7 @@ var DB *sqlx.DB
 type AuthorizationRequest struct {
 	Ticket          string    `db:"ticket" json:"ticket"`
 	RequestedScopes string    `db:"requested_scopes" json:"requested_scopes"`
-	ClientRequest   string    `db:"client_request" json:"request"`
+	ClientRequest   string    `db:"client_request" json:"client_request"`
 	UserId          int       `db:"user_id"`
 	Status          string    `db:"status"`
 	CreatedAt       time.Time `db:"created_at" json:"created_at"`

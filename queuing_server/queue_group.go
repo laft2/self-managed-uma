@@ -1,6 +1,8 @@
 package queuing_server
 
 import (
+	"bytes"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -53,8 +55,8 @@ var RequestSubmitted AuthzError = AuthzError{
 
 func AddQueueGroup(e *echo.Echo) {
 	queueGroup := e.Group("/queue")
+	// communicate with smartphone (authorization server)
 	queueGroup.GET("/requests/:user_id", func(c echo.Context) error {
-		// communicate with smartphone (authorization server)
 		// TODO: authenticate user
 		// curl example: curl -XGET 'http://localhost:9010/queue/requests/1'
 		user_id, err := strconv.Atoi(c.Param("user_id"))
@@ -67,19 +69,20 @@ func AddQueueGroup(e *echo.Echo) {
 		}
 		return c.JSON(http.StatusOK, requests)
 	})
-	queueGroup.POST("/requests", func(c echo.Context) error {
-		ticket := c.FormValue("ticket")
-		clientReq := c.FormValue("request")
-		err := qs_db.AddClientRequest(ticket, clientReq)
-		if err != nil {
-			return c.JSON(InvalidRequest.StatusCode, InvalidRequest)
-		}
-		return c.JSON(http.StatusCreated, map[string]string{
-			"status": "waiting",
-		})
-	})
 	queueGroup.POST("/rpt", func(c echo.Context) error {
-		return nil
+		ticket := c.FormValue("ticket")
+		fmt.Printf("ticket: %v\n", ticket)
+		rpt := c.FormValue("rpt")
+		clientEp := c.FormValue("clientEp")
+		body := bytes.NewBufferString("{rpt:" + rpt + "}")
+		http.DefaultClient.Post(
+			clientEp,
+			"application/json",
+			body,
+		)
+		return c.JSON(http.StatusOK, map[string]string{
+			"status": "ok",
+		})
 	})
 }
 

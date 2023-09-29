@@ -2,7 +2,7 @@ IMAGE_TAG=suma-rs
 
 .PHONY: build
 build:
-	@if docker images inspect ${IMAGE_TAG}; then \
+	@if docker image inspect ${IMAGE_TAG}; then \
 		docker rmi ${IMAGE_TAG}; \
 	fi
 	docker build . -t ${IMAGE_TAG}

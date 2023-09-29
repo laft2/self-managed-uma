@@ -1,0 +1,1 @@
+{"permission_ticket":{"ticket":"22a8ae0c-bd04-11ed-9caf-fe2b4cfc4ae4"},"qs_endpoint":"http://localhost:9010"}

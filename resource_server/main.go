@@ -1,9 +1,11 @@
-package main
+package resourceserver
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -19,6 +21,20 @@ import (
 )
 
 var db *sqlx.DB
+
+type QueuingServer struct {
+	URI          string
+	permissionEP string
+}
+
+var QS = QueuingServer{
+	URI:          "http://localhost:9010",
+	permissionEP: "/suma/perm",
+}
+
+func (qs *QueuingServer) PermissionEP() string {
+	return qs.URI + qs.permissionEP
+}
 
 func ConnectDB() (*sqlx.DB, error) {
 	return sqlx.Open("sqlite3", "sql/sample.sqlite3")
@@ -99,7 +115,7 @@ func authenticate(c echo.Context, userId string, password string) (res bool, err
 	return
 }
 
-func main() {
+func RS() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Static("/static/css/", "front/css/")
@@ -140,6 +156,29 @@ func main() {
 			return c.Redirect(http.StatusSeeOther, "/authenticate")
 		}
 	})
+	api := e.Group("/api")
+	api.GET("/resource/:id", func(c echo.Context) error {
+		authHeader := c.Request().Header.Get("Authorization")
+		resourceId := c.Param("id")
+		// if no access token
+		if len(authHeader) <= len("bearer ") {
+			permTicket, err := getPermissionTicket(resourceId)
+			if err != nil {
+				return err
+			}
+			resp := &PermissionTicketResponse{
+				PermTicket: *permTicket,
+				QsEndpoint: QS.URI,
+			}
+			return c.JSON(http.StatusUnauthorized, resp)
+		}
+		// TODO: access control with token
+		token := authHeader[len("Bearer "):]
+		fmt.Printf("token: %v\n", token)
+
+		return c.String(http.StatusOK, "provide resource")
+	})
+
 	port := os.Getenv("RS_PORT")
 	if port == "" {
 		e.Logger.Fatal(e.Start("localhost:10001"))
@@ -147,4 +186,53 @@ func main() {
 		// for docker environment
 		e.Logger.Fatal(e.Start(":" + port))
 	}
+}
+
+type PermRequest struct {
+	ResourceID     string   `json:"resource_id"`
+	ResourceScopes []string `json:"resource_scopes"`
+}
+type PermissionTicket struct {
+	ID string `json:"ticket"`
+}
+type PermissionTicketResponse struct {
+	PermTicket PermissionTicket `json:"permission_ticket"`
+	QsEndpoint string           `json:"qs_endpoint"`
+}
+
+func judgeResourceScope(resourceId string) []string {
+	// TODO: implement appropriate judgement
+	// may need what type of action is requested for judging
+	return []string{"view"}
+}
+func getPermissionTicket(resourceId string) (*PermissionTicket, error) {
+	permRequest := &PermRequest{
+		ResourceID:     resourceId,
+		ResourceScopes: judgeResourceScope(resourceId),
+	}
+
+	jsonValue, err := json.Marshal(permRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", QS.PermissionEP(), bytes.NewBuffer(jsonValue))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "bearer 4146af431d") // TODO: appropriate authentication
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	permissionTicket := &PermissionTicket{}
+	if err := json.NewDecoder(resp.Body).Decode(permissionTicket); err != nil {
+		return nil, err
+	}
+
+	return permissionTicket, nil
 }

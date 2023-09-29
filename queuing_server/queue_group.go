@@ -56,6 +56,31 @@ var RequestSubmitted AuthzError = AuthzError{
 func AddQueueGroup(e *echo.Echo) {
 	queueGroup := e.Group("/queue")
 	// communicate with smartphone (authorization server)
+	queueGroup.GET("/requests/test", func(c echo.Context) error {
+		// test plain connection
+
+		return c.JSON(http.StatusOK, []interface{}{
+			map[string]interface{}{
+				"ticket": "test_ticket",
+				"requested_scopes": map[string]interface{}{
+					"resources": []map[string]interface{}{
+						{
+							"resource_id": "test_id",
+							"resource_scopes": []string{
+								"test",
+								"view",
+							},
+						},
+					},
+					"client_key": "test_client_key",
+				},
+				"client_request": map[string]interface{}{
+					"grant_type": "test_grant_type",
+					"ticket":     "test_ticket",
+				},
+			}},
+		)
+	})
 	queueGroup.GET("/requests/:user_id", func(c echo.Context) error {
 		// TODO: authenticate user
 		// curl example: curl -XGET 'http://localhost:9010/queue/requests/1'
@@ -69,10 +94,12 @@ func AddQueueGroup(e *echo.Echo) {
 		}
 		return c.JSON(http.StatusOK, requests)
 	})
+
 	queueGroup.POST("/rpt", func(c echo.Context) error {
 		ticket := c.FormValue("ticket")
 		fmt.Printf("ticket: %v\n", ticket)
 		rpt := c.FormValue("rpt")
+		fmt.Printf("rpt: %v\n", rpt)
 		clientEp := c.FormValue("clientEp")
 		body := bytes.NewBufferString("{rpt:" + rpt + "}")
 		http.DefaultClient.Post(
@@ -84,6 +111,7 @@ func AddQueueGroup(e *echo.Echo) {
 			"status": "ok",
 		})
 	})
+
 }
 
 // send authorization request to authorization server

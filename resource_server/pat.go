@@ -1,4 +1,4 @@
-package resourceserver
+package resource_server
 
 import (
 	"context"

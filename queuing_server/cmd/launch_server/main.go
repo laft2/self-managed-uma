@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/laft2/self-managed-uma/queuing_server"
@@ -29,5 +31,11 @@ func main() {
 	queuing_server.AddClientGroup(e)
 
 	// Start server
-	e.Logger.Fatal(e.Start("localhost:9010"))
+	port := os.Getenv("QS_PORT")
+	ipaddr := os.Getenv("QS_IPADDR")
+	if port == "" {
+		e.Logger.Fatal(e.Start("localhost:10003"))
+	} else {
+		e.Logger.Fatal(e.Start(ipaddr + ":" + port))
+	}
 }

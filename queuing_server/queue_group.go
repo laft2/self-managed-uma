@@ -65,9 +65,8 @@ func AddQueueGroup(e *echo.Echo) {
 				"requested_scopes": map[string]interface{}{
 					"resources": []map[string]interface{}{
 						{
-							"resource_id": "test_id",
+							"resource_id": "test_resource_id",
 							"resource_scopes": []string{
-								"test",
 								"view",
 							},
 						},
@@ -75,8 +74,9 @@ func AddQueueGroup(e *echo.Echo) {
 					"client_key": "test_client_key",
 				},
 				"client_request": map[string]interface{}{
-					"grant_type": "test_grant_type",
-					"ticket":     "test_ticket",
+					"grant_type":  "test_grant_type",
+					"ticket":      "test_ticket",
+					"client_info": "sample_client",
 				},
 			}},
 		)

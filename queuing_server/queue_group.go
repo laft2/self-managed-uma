@@ -78,15 +78,15 @@ var testData = []interface{}{
 func AddQueueGroup(e *echo.Echo) {
 	queueGroup := e.Group("/queue")
 	// communicate with smartphone (authorization server)
-	queueGroup.GET("/requests/test", func(c echo.Context) error {
+	queueGroup.GET("/test/requests", func(c echo.Context) error {
 		// test plain connection
 		return c.JSON(http.StatusOK, testData)
 	})
-	queueGroup.POST("/request/test", func(c echo.Context) error {
+	queueGroup.POST("/test/request", func(c echo.Context) error {
 		pool = append(pool, testData...)
 		return nil
 	})
-	queueGroup.GET("/requests/:user_id", func(c echo.Context) error {
+	queueGroup.GET("/requests", func(c echo.Context) error {
 		resp := pool
 		if len(resp) == 0 {
 			return c.JSON(http.StatusNoContent, nil)

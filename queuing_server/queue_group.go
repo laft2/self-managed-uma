@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/laft2/self-managed-uma/queuing_server/qs_db"
 )
 
 type AuthorizationResponse struct {
@@ -53,46 +51,48 @@ var RequestSubmitted AuthzError = AuthzError{
 	Error:      "request_submitted",
 }
 
+var pool = []interface{}{} // not thread safe
+
+var testData = []interface{}{
+	map[string]interface{}{
+		"ticket": "test_ticket",
+		"requested_scopes": map[string]interface{}{
+			"resources": []map[string]interface{}{
+				{
+					"resource_id": "test_resource_id",
+					"resource_scopes": []string{
+						"view",
+					},
+				},
+			},
+			"client_key": "test_client_key",
+		},
+		"client_request": map[string]interface{}{
+			"grant_type":  "test_grant_type",
+			"ticket":      "test_ticket",
+			"client_info": "sample_client",
+		},
+	},
+}
+
 func AddQueueGroup(e *echo.Echo) {
 	queueGroup := e.Group("/queue")
 	// communicate with smartphone (authorization server)
 	queueGroup.GET("/requests/test", func(c echo.Context) error {
 		// test plain connection
-
-		return c.JSON(http.StatusOK, []interface{}{
-			map[string]interface{}{
-				"ticket": "test_ticket",
-				"requested_scopes": map[string]interface{}{
-					"resources": []map[string]interface{}{
-						{
-							"resource_id": "test_resource_id",
-							"resource_scopes": []string{
-								"view",
-							},
-						},
-					},
-					"client_key": "test_client_key",
-				},
-				"client_request": map[string]interface{}{
-					"grant_type":  "test_grant_type",
-					"ticket":      "test_ticket",
-					"client_info": "sample_client",
-				},
-			}},
-		)
+		return c.JSON(http.StatusOK, testData)
+	})
+	queueGroup.POST("/request/test", func(c echo.Context) error {
+		pool = append(pool, testData...)
+		return nil
 	})
 	queueGroup.GET("/requests/:user_id", func(c echo.Context) error {
-		// TODO: authenticate user
-		// curl example: curl -XGET 'http://localhost:9010/queue/requests/1'
-		user_id, err := strconv.Atoi(c.Param("user_id"))
-		if err != nil {
-			return err
+		resp := pool
+		if len(resp) == 0 {
+			return c.JSON(http.StatusNoContent, nil)
 		}
-		requests, err := qs_db.SelectWaitingRequests(user_id)
-		if err != nil {
-			return err
-		}
-		return c.JSON(http.StatusOK, requests)
+		pool = []interface{}{}
+		return c.JSON(http.StatusOK, resp)
 	})
 
 	queueGroup.POST("/rpt", func(c echo.Context) error {
